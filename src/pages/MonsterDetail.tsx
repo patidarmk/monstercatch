@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 const MonsterDetail = () => {
   const { id } = useParams({ from: '/monsters/$id' });
   const { gameState, trainMonster } = useGameState();
-  const monsterId = parseInt(id);
+  const monsterId = id; // Already number from parseParams
   const monster = gameState.caughtMonsters.find(m => m.id === monsterId);
   const baseMonster = monsters.find(m => m.id === monster?.monsterId);
   const { toast } = useToast();
@@ -19,7 +19,7 @@ const MonsterDetail = () => {
 
   const handleTrain = () => {
     trainMonster(monster.id);
-    toast({ title: "Training Complete!", description: `${monster.name} grew stronger!` });
+    toast({ title: "Training Complete!", description: `${monster.name || baseMonster.name} grew stronger!` });
   };
 
   const evolutionInfo = baseMonster.evolution.to ? (
@@ -34,7 +34,7 @@ const MonsterDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 py-8">
-      <Breadcrumb currentPage={monster.name} parentPath="/monsters" />
+      <Breadcrumb currentPage={monster.name || baseMonster.name} parentPath="/monsters" />
       <div className="container mx-auto px-4">
         <MonsterCard monster={monster} isPlayerOwned />
         {evolutionInfo}
@@ -59,7 +59,7 @@ const MonsterDetail = () => {
         <Button onClick={handleTrain} className="w-full mb-4">
           Train (+10 XP)
         </Button>
-        <Link to="/battles">
+        <Link to="/battles" search={true}>
           <Button variant="outline" className="w-full">Enter Battle</Button>
         </Link>
       </div>

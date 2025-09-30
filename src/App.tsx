@@ -59,7 +59,7 @@ const monsterDetailRoute = createTanStackRoute({
   path: '/monsters/$id',
   component: MonsterDetail,
   parseParams: (params) => ({
-    id: parseInt(params.id),
+    id: parseInt(params.id, 10),
   }),
 })
 
@@ -67,9 +67,9 @@ const battlesRoute = createTanStackRoute({
   getParentRoute: () => rootRoute,
   path: '/battles',
   component: Battles,
-  validateSearch: (search: { enemyId?: number }) => ({
-    enemyId: search.enemyId,
-  }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    enemyId: search.enemyId ? parseInt(search.enemyId as string, 10) : undefined,
+  } as { enemyId?: number }),
 })
 
 const trainingRoute = createTanStackRoute({

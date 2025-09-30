@@ -90,11 +90,11 @@ const Explore = () => {
           <h2 className="text-2xl font-bold mb-4">Your Team</h2>
           <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
             {gameState.playerTeam.slice(0, 6).map(monster => (
-              <Link key={monster.id} to={`/monsters/${monster.id}`}>
+              <Link key={monster.id} to="/monsters/$id" params={{ id: monster.id }}>
                 <MonsterCard
                   monster={monster}
                   isPlayerOwned
-                  rarity="common" // Derive from data
+                  rarity="common"
                 />
               </Link>
             ))}

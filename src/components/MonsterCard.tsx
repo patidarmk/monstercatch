@@ -1,4 +1,5 @@
-import { Monster, PlayerMonster } from '@/types/game';
+import { Monster } from '@/data/monsters';
+import { PlayerMonster } from '@/types/game';
 import { Heart, Zap, Shield, Rabbit, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +15,14 @@ interface MonsterCardProps {
 
 const MonsterCard = ({ monster, onCatch, onTrain, isPlayerOwned = false, rarity = 'common' }: MonsterCardProps) => {
   const stats = 'baseStats' in monster ? monster.baseStats : {
-    hp: monster.maxHp,
-    attack: monster.attack,
-    defense: monster.defense,
-    speed: monster.speed,
+    hp: (monster as PlayerMonster).maxHp,
+    attack: (monster as PlayerMonster).attack,
+    defense: (monster as PlayerMonster).defense,
+    speed: (monster as PlayerMonster).speed,
   };
-  const displayName = (monster as any).nickname || (monster as any).name;
-  const displayImage = (monster as any).image;
+  const displayName = (monster as any).nickname || (monster as any).name || (monster as Monster).name;
+  const displayImage = (monster as any).image || (monster as Monster).image;
+  const description = 'description' in monster ? (monster as Monster).description : 'Your loyal companion.';
 
   const rarityColor = {
     common: 'bg-green-100 text-green-800',
@@ -45,9 +47,7 @@ const MonsterCard = ({ monster, onCatch, onTrain, isPlayerOwned = false, rarity 
               {rarity.toUpperCase()}
             </Badge>
           </div>
-          <p className="text-gray-600 mb-4 text-sm">
-            {'description' in monster ? (monster as Monster).description : 'Your loyal companion.'}
-          </p>
+          <p className="text-gray-600 mb-4 text-sm">{description}</p>
           <div className="grid grid-cols-2 gap-2 text-sm mb-4">
             <div className="flex items-center">
               <Heart size={16} className="mr-2 text-red-500" />

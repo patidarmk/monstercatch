@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlayerMonster, BattleState, Monster } from '@/types/game';
-import { Sword, Heart, Zap } from 'lucide-react';
+import { PlayerMonster } from '@/types/game';
+import { Monster } from '@/data/monsters';
+import { Sword, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+
+interface BattleState {
+  playerMonster: PlayerMonster;
+  enemyMonster: Monster;
+  playerTurn: boolean;
+  battleLog: string[];
+  winner?: 'player' | 'enemy';
+  enemyCurrentHp: number;
+}
 
 interface BattleArenaProps {
   playerMonster: PlayerMonster;
@@ -13,19 +23,18 @@ interface BattleArenaProps {
 
 const BattleArena = ({ playerMonster, enemyMonster, onBattleEnd }: BattleArenaProps) => {
   const [battleState, setBattleState] = useState<BattleState>({
-    playerMonster: { ...playerMonster, currentHp: playerMonster.currentHp },
+    playerMonster,
     enemyMonster,
     playerTurn: true,
     battleLog: [`A wild ${enemyMonster.name} appeared!`],
-    winner: undefined,
     enemyCurrentHp: enemyMonster.baseStats.hp,
   });
   const { toast } = useToast();
 
   const performAttack = (attacker: 'player' | 'enemy', damage: number) => {
     setBattleState(prev => {
-      let newPlayerHp = prev.playerMonster?.currentHp || 0;
-      let newEnemyHp = prev.enemyCurrentHp || 0;
+      let newPlayerHp = prev.playerMonster.currentHp;
+      let newEnemyHp = prev.enemyCurrentHp;
       let newLog = [...prev.battleLog, `${attacker.toUpperCase()} attacks for ${damage} damage!`];
 
       if (attacker === 'player') {
@@ -35,34 +44,37 @@ const BattleArena = ({ playerMonster, enemyMonster, onBattleEnd }: BattleArenaPr
       }
 
       if (newEnemyHp <= 0) {
-        newLog.push(`Wild ${prev.enemyMonster?.name} fainted!`);
-        return { 
+        newLog.push(`Wild ${prev.enemyMonster.name} fainted!`);
+        const newState = { 
           ...prev, 
           battleLog: newLog, 
-          winner: 'player', 
+          winner: 'player' as const, 
           playerTurn: false,
           enemyCurrentHp: newEnemyHp,
         };
+        return newState;
       }
       if (newPlayerHp <= 0) {
-        newLog.push(`${prev.playerMonster?.nickname || prev.playerMonster?.name} fainted!`);
-        return { 
+        newLog.push(`${prev.playerMonster.nickname || prev.playerMonster.name} fainted!`);
+        const newState = { 
           ...prev, 
           battleLog: newLog, 
-          winner: 'enemy', 
+          winner: 'enemy' as const, 
           playerTurn: false,
           playerMonster: { ...prev.playerMonster, currentHp: newPlayerHp },
         };
+        return newState;
       }
 
       const updatedPlayer = { ...prev.playerMonster, currentHp: newPlayerHp };
-      return { 
+      const newState = { 
         ...prev, 
         battleLog: newLog, 
         playerTurn: !prev.playerTurn,
         playerMonster: updatedPlayer,
         enemyCurrentHp: newEnemyHp,
       };
+      return newState;
     });
   };
 
@@ -86,7 +98,7 @@ const BattleArena = ({ playerMonster, enemyMonster, onBattleEnd }: BattleArenaPr
       const timeout = setTimeout(enemyAttack, 1000);
       return () => clearTimeout(timeout);
     }
-  }, [battleState.playerTurn, battleState.winner]);
+  }, [battleState.playerTurn, battleState.winner, battleState]);
 
   if (battleState.winner) {
     return (
@@ -112,7 +124,7 @@ const BattleArena = ({ playerMonster, enemyMonster, onBattleEnd }: BattleArenaPr
             <h3 className="font-bold">{playerMonster.nickname || playerMonster.name} (Lv.{playerMonster.level})</h3>
             <div className="flex items-center justify-center space-x-2 mt-1">
               <Heart className="text-red-500" size={16} />
-              <span>{battleState.playerMonster?.currentHp}/{playerMonster.maxHp}</span>
+              <span>{battleState.playerMonster.currentHp}/{playerMonster.maxHp}</span>
             </div>
           </div>
           <div className="text-center">
